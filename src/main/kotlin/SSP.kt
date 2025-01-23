@@ -23,35 +23,40 @@ class SSP// constructor (easy instances)
     }
 
     // branch-and-prune without Subset (recursive, private)
-    private fun simpleBpRec(i: Int, partial: Long, total: Long, used: BooleanArray) {
-        // are we out of bounds yet?
-        if (partial + total < this.target || partial > this.target) return
+    private fun simpleBpRec(i: Int, usedSum: Long, remainingSum: Long, used: BooleanArray) {
+        // are we out of bounds yet? -> prune
+        if (usedSum + remainingSum < this.target || usedSum > this.target) return
         // did we find a new solution already?
-        if (partial == this.target) {
+        if (usedSum == this.target) {
             // we simply print the solution
-            print("[")
-            var first = true
-            for (k in 0 until i) {
-                if (used[k]) {
-                    if (!first) print(",")
-                    print(this.original[k])
-                    first = false
-                }
-            }
-            println("]")
+            printSolution(i, used)
             return
         }
-        // did we use all integers already?
+        // did we use all integers already? -> Prevent array out of index
         if (i == this.original.size) return
-        var totalCopy = total - this.original[i]
+        val updatedRemainingSum = remainingSum - this.original[i]
         // recursive call without original[i]
         used[i] = false
-        this.simpleBpRec(i + 1, partial, totalCopy, used)
+        this.simpleBpRec(i + 1, usedSum, updatedRemainingSum, used)
         // recursive call with original[i]
         used[i] = true
-        val partialCopy = partial + this.original[i]
-        this.simpleBpRec(i + 1, partialCopy, totalCopy, used)
+        //
+        val updatedUsedSum = usedSum + this.original[i]
+        this.simpleBpRec(i + 1, updatedUsedSum, updatedRemainingSum, used)
         used[i] = false // branch-and-prune without Subset
+    }
+
+    private fun printSolution(i: Int, used: BooleanArray) {
+        print("[")
+        var first = true
+        for (k in 0 until i) {
+            if (used[k]) {
+                if (!first) print(",")
+                print(this.original[k])
+                first = false
+            }
+        }
+        println("]")
     }
 
     // computing the sum of all integers
@@ -65,8 +70,8 @@ class SSP// constructor (easy instances)
     fun simpleBp() {
         val n = this.original.size
         val used = BooleanArray(n)
-        val total = this.totalSum()
-        this.simpleBpRec(0, 0L, total, used)
+        val originalSum = this.totalSum()
+        this.simpleBpRec(0, 0L, originalSum, used)
     }
 
     override fun toString(): String {
