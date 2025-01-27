@@ -2,8 +2,7 @@ package org.example
 
 import java.util.*
 
-class SSP// constructor (easy instances)
-    (n: Int) {
+class SSP(n: Int) {
 
     // attributes
     private var target: Long = 0
@@ -14,12 +13,9 @@ class SSP// constructor (easy instances)
         require(n > 2) { "SSP size is too small" }
         val random = Random()
         this.target = 0
-        this.original = LongArray(n)
+        this.original = LongArray(n) { (it + 1).toLong() }
         // original = {1,2,3,4,...} , target = the sum of some of them
-        for (i in 0 until n) {
-            original[i] = (i + 1).toLong()
-            if (random.nextBoolean()) this.target += original[i]
-        }
+        this.original.forEach { if (random.nextBoolean()) this.target += it }
     }
 
     // branch-and-prune without Subset (recursive, private)
@@ -47,24 +43,15 @@ class SSP// constructor (easy instances)
     }
 
     private fun printSolution(i: Int, used: BooleanArray) {
-        print("[")
-        var first = true
-        for (k in 0 until i) {
-            if (used[k]) {
-                if (!first) print(",")
-                print(this.original[k])
-                first = false
-            }
-        }
-        println("]")
+        val collectedSolution = (0 until i).filter { used[it] }
+            .joinToString(", ") { original[it].toString() }
+
+        println("[$collectedSolution]")
     }
 
     // computing the sum of all integers
     private fun totalSum(): Long {
-        val n = original.size
-        var sum = original[0]
-        for (i in 1 until n) sum += original[i]
-        return sum
+        return original.sum()
     }
 
     fun simpleBp() {
@@ -78,25 +65,16 @@ class SSP// constructor (easy instances)
         return "SSP(n = " + original.size + "; target = " + this.target + ")"
     }
 
-
     // showing the integers in the original set
-    fun showIntegers(): String {
-        var s = "Original set = ["
-        for (i in original.indices) {
-            s += original[i]
-            if (i + 1 < original.size) s = "$s,"
-        }
-        return "$s]"
-    }
+    fun showIntegers(): String = "Original set = [${original.joinToString(",")}]"
 
-    fun showTarget(): String = "Target is " + this.target
-
+    fun showTarget() = "Target is " + this.target
 }
 
 
 @Throws(Exception::class)
 fun main() {
-    val ssp: SSP = SSP(20)
+    val ssp = SSP(20)
     println(ssp)
     println(ssp.showIntegers())
     println(ssp.showTarget())
@@ -106,3 +84,4 @@ fun main() {
     val end = System.currentTimeMillis()
     println("OK; time " + (end - start))
 }
+
