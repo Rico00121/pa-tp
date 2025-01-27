@@ -30,16 +30,15 @@ class SSP(n: Int) {
         }
         // did we use all integers already? -> Prevent array out of index
         if (i == this.original.size) return
-        val updatedRemainingSum = remainingSum - this.original[i]
-        // recursive call without original[i]
-        used[i] = false
-        this.simpleBpRec(i + 1, usedSum, updatedRemainingSum, used)
-        // recursive call with original[i]
-        used[i] = true
-        //
-        val updatedUsedSum = usedSum + this.original[i]
-        this.simpleBpRec(i + 1, updatedUsedSum, updatedRemainingSum, used)
-        used[i] = false // branch-and-prune without Subset
+        // recursive calls for all possible selections
+        for (j in i until this.original.size) {
+            val updatedRemainingSum = remainingSum - this.original[j]
+            // recursive call with original[j]
+            used[j] = true // marked as selected
+            val updatedUsedSum = usedSum + this.original[j]
+            this.simpleBpRec(j + 1, updatedUsedSum, updatedRemainingSum, used)
+            used[j] = false // backtrack, marked as not selected
+        }
     }
 
     private fun printSolution(i: Int, used: BooleanArray) {
@@ -58,7 +57,7 @@ class SSP(n: Int) {
         val n = this.original.size
         val used = BooleanArray(n)
         val originalSum = this.totalSum()
-        this.simpleBpRec(0, 0L, originalSum, used)
+        this.simpleBpRec(i = 0, usedSum = 0L, remainingSum = originalSum, used = used)
     }
 
     override fun toString(): String {
