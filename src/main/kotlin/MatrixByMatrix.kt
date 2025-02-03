@@ -2,26 +2,26 @@ package org.example
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
-// 全局参数：正方矩阵的大小和块数
+// The size of the square matrix
 const val MATRIX_SIZE = 10
+// The number of blocks
 const val NUM_BLOCKS = 2
 
-// 使用固定种子以便复现（类似于 C 中的 srand(999)）
 val random = Random(999)
 
-// 生成一个 0~1 之间，保留 3 位小数的随机数
+// Generate a random number between 0 ~ 1 and retain 3 decimal numbers
 fun doubleRandom(): Double = random.nextInt(1000).toDouble() / 1000.0
 
-// 生成一个 n×n 的零矩阵
+// Generate a zero matrix of N × N
 fun matrixZeros(n: Int): Array<DoubleArray> {
     require(n > 0)
     return Array(n) { DoubleArray(n) }
 }
 
-// 生成一个 n×n 的随机矩阵，元素均为 doubleRandom() 的结果
+// Generate a random matrix of N × N, the results of the elements are double random
 fun matrixRandom(n: Int): Array<DoubleArray> = Array(n) { DoubleArray(n){ doubleRandom() } }
 
-// 打印矩阵（仅当矩阵较小时方便观察结果）
+// Printing matrix (only when the matrix is small for easy observation results)
 fun matrixPrint(n: Int, A: Array<DoubleArray>) {
     require(n > 0)
     println("[")
@@ -31,7 +31,7 @@ fun matrixPrint(n: Int, A: Array<DoubleArray>) {
     println("]")
 }
 
-// 简单的矩阵乘法：计算 C = C + A * B
+// Simple matrix multiplication: Calculate C = C + A * B
 fun mbmSimple(matrixSize: Int, matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>, matrixC: Array<DoubleArray>) {
     for (i in 0 until matrixSize) {
         for (j in 0 until matrixSize) {
@@ -42,8 +42,6 @@ fun mbmSimple(matrixSize: Int, matrixA: Array<DoubleArray>, matrixB: Array<Doubl
     }
 }
 
-// 对于子块（大小为 L×L）的矩阵乘法：计算
-// C[cRow : cRow+L][cCol : cCol+L] = C + A[aRow : aRow+L][aCol : aCol+L] * B[bRow : bRow+L][bCol : bCol+L]
 fun multiplySubMatrixBlocks(
     blockSize: Int,
     matrixA: Array<DoubleArray>, aStartRow: Int, aStartCol: Int,
@@ -59,8 +57,8 @@ fun multiplySubMatrixBlocks(
     }
 }
 
-// 分块矩阵乘法：将矩阵划分为 NBLOCKS×NBLOCKS 个块，每个块的尺寸为 L = N/NBLOCKS
-// 计算 C = C + A * B
+// Block matrix multiplication: divide the matrix into numBlocks × numBlocks blocks
+// each block size is blockSize = MATRIX_SIZE / NUM_BLOCKS
 fun blockMatrixMultiplication(
     numBlocks: Int,
     blockSize: Int,
@@ -117,10 +115,10 @@ fun main() {
     }
     println("Clock time = $timeSimpleSec seconds")
 
-    // 重置 C 矩阵
+    // Reset the C matrix to zero matrix
     matrixC = matrixZeros(MATRIX_SIZE)
 
-    // 分块矩阵乘法
+    // Block matrix multiplication
     print("Computing C = C + A*B with block algorithm ... ")
     val eachSubMatrixSize = MATRIX_SIZE / NUM_BLOCKS
     val timeBlock = measureNanoTime {
