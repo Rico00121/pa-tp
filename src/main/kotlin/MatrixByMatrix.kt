@@ -33,6 +33,7 @@ fun matrixPrint(n: Int, A: Array<DoubleArray>) {
 
 // Simple matrix multiplication: Calculate C = C + A * B
 fun mbmSimple(matrixSize: Int, matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>, matrixC: Array<DoubleArray>) {
+    // i: row, j: column, k: inner index
     for (i in 0 until matrixSize) {
         for (j in 0 until matrixSize) {
             for (k in 0 until matrixSize) {
@@ -48,6 +49,7 @@ fun multiplySubMatrixBlocks(
     matrixB: Array<DoubleArray>, bStartRow: Int, bStartCol: Int,
     matrixC: Array<DoubleArray>, cStartRow: Int, cStartCol: Int
 ) {
+    // i: row, j: column, k: inner index
     for (i in 0 until blockSize) {
         for (k in 0 until blockSize) {
             for (j in 0 until blockSize) {
@@ -88,7 +90,7 @@ fun main() {
     println("Matrix-by-matrix multiplication (MATRIX_SIZE = $MATRIX_SIZE, NUM_BLOCKS = $NUM_BLOCKS)")
     require(MATRIX_SIZE % NUM_BLOCKS == 0) { "MATRIX_SIZE must be able to be removed by NUM_BLOCKS" }
 
-    // 准备矩阵
+    // Prepare matrix
     val matrixA = matrixRandom(MATRIX_SIZE)
     val matrixB = matrixRandom(MATRIX_SIZE)
     var matrixC = matrixZeros(MATRIX_SIZE)
@@ -102,7 +104,7 @@ fun main() {
         matrixPrint(MATRIX_SIZE, matrixC)
     }
 
-    // 简单矩阵乘法
+    // Simple matrix multiplication
     print("Computing C = C + A*B with simple algorithm ... ")
     val timeSimple = measureNanoTime {
         mbmSimple(MATRIX_SIZE, matrixA, matrixB, matrixC)
