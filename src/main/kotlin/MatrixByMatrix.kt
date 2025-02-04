@@ -65,18 +65,29 @@ fun blockMatrixMultiplication(
     require(numBlocks > 0) { "Number of blocks must be greater than 0" }
     require(blockSize > 0) { "Block size must be greater than 0" }
 
+    val availableProcessors = Runtime.getRuntime().availableProcessors()
+    println("Current available number of processors: $availableProcessors")
+    val executor = Executors.newFixedThreadPool(availableProcessors)
+    val tasks = mutableListOf<Runnable>()
+
     for (iBlock in 0 until numBlocks) {
         for (jBlock in 0 until numBlocks) {
             for (kBlock in 0 until numBlocks) {
-                multiplySubMatrixBlocks(
-                    blockSize,
-                    matrixA, iBlock * blockSize, kBlock * blockSize,
-                    matrixB, kBlock * blockSize, jBlock * blockSize,
-                    matrixC, iBlock * blockSize, jBlock * blockSize
-                )
+                tasks.add{
+                    multiplySubMatrixBlocks(
+                        blockSize,
+                        matrixA, iBlock * blockSize, kBlock * blockSize,
+                        matrixB, kBlock * blockSize, jBlock * blockSize,
+                        matrixC, iBlock * blockSize, jBlock * blockSize
+                    )
+                }
             }
         }
     }
+
+    tasks.forEach { executor.execute(it) }
+    executor.shutdown()
+    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
 }
 
 
