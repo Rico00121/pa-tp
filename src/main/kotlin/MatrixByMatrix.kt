@@ -1,11 +1,17 @@
 package org.example
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
 // The size of the square matrix
-const val MATRIX_SIZE = 10
+const val MATRIX_SIZE = 4000
 // The number of blocks
-const val NUM_BLOCKS = 2
+const val NUM_BLOCKS = 20
 
 val random = Random(999)
 
@@ -29,18 +35,6 @@ fun matrixPrint(n: Int, A: Array<DoubleArray>) {
         println("    ${A[i].joinToString(" ") { String.format("%8.4f", it) }}")
     }
     println("]")
-}
-
-// Simple matrix multiplication: Calculate C = C + A * B
-fun mbmSimple(matrixSize: Int, matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>, matrixC: Array<DoubleArray>) {
-    // i: row, j: column, k: inner index
-    for (i in 0 until matrixSize) {
-        for (j in 0 until matrixSize) {
-            for (k in 0 until matrixSize) {
-                matrixC[i][j] += matrixA[i][k] * matrixB[k][j]
-            }
-        }
-    }
 }
 
 fun multiplySubMatrixBlocks(
@@ -95,33 +89,8 @@ fun main() {
     val matrixB = matrixRandom(MATRIX_SIZE)
     var matrixC = matrixZeros(MATRIX_SIZE)
 
-    if (MATRIX_SIZE < 11) {
-        println("A =")
-        matrixPrint(MATRIX_SIZE, matrixA)
-        println("B =")
-        matrixPrint(MATRIX_SIZE, matrixB)
-        println("C =")
-        matrixPrint(MATRIX_SIZE, matrixC)
-    }
-
-    // Simple matrix multiplication
-    print("Computing C = C + A*B with simple algorithm ... ")
-    val timeSimple = measureNanoTime {
-        mbmSimple(MATRIX_SIZE, matrixA, matrixB, matrixC)
-    }
-    println("done!")
-    val timeSimpleSec = timeSimple / 1e9
-    if (MATRIX_SIZE < 11) {
-        println("C =")
-        matrixPrint(MATRIX_SIZE, matrixC)
-    }
-    println("Clock time = $timeSimpleSec seconds")
-
-    // Reset the C matrix to zero matrix
-    matrixC = matrixZeros(MATRIX_SIZE)
-
     // Block matrix multiplication
-    print("Computing C = C + A*B with block algorithm ... ")
+    println("Computing C = C + A*B with block algorithm ... ")
     val eachSubMatrixSize = MATRIX_SIZE / NUM_BLOCKS
     val timeBlock = measureNanoTime {
         blockMatrixMultiplication(NUM_BLOCKS,eachSubMatrixSize, matrixA, matrixB, matrixC)
