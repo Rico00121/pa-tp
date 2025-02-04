@@ -5,6 +5,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
@@ -45,8 +47,8 @@ fun multiplySubMatrixBlocks(
 ) {
     // i: row, j: column, k: inner index
     for (i in 0 until blockSize) {
-        for (k in 0 until blockSize) {
-            for (j in 0 until blockSize) {
+        for (j in 0 until blockSize) {
+            for (k in 0 until blockSize) {
                 matrixC[cStartRow + i][cStartCol + j] += matrixA[aStartRow + i][aStartCol + k] * matrixB[bStartRow + k][bStartCol + j]
             }
         }
