@@ -1,14 +1,16 @@
 package org.example
 
+import java.io.File
+import java.io.FileNotFoundException
 import java.util.*
 
-class SSP(n: Int) {
+class SSP{
 
     // attributes
     private var target: Long = 0
     private var original: LongArray = longArrayOf()
 
-    init {
+     constructor(n: Int){
         require(n > 0) { "SSP size cannot be non-positive" }
         require(n > 2) { "SSP size is too small" }
         val random = Random()
@@ -18,6 +20,31 @@ class SSP(n: Int) {
         this.original.forEach { if (random.nextBoolean()) this.target += it }
     }
 
+    // constructor (from text file)
+    @Throws(IllegalArgumentException::class, FileNotFoundException::class)
+    constructor(filename: String?) {
+        requireNotNull(filename) { "Given path/file is null" }
+        val input = File(filename)
+        require(input.exists()) { "Given path/file does not exist" }
+        val scan = Scanner(input)
+
+        // number of elements in the original set
+        if (!scan.hasNext()) throw IllegalArgumentException("Error while parsing input file")
+        val size = scan.nextInt()
+        if (size <= 0) throw IllegalArgumentException("Error while parsing input file")
+        this.original = LongArray(size)
+
+        // target
+        if (!scan.hasNext()) throw IllegalArgumentException("Error while parsing input file")
+        this.target = scan.nextLong()
+
+        // the original set
+        for (i in 0 until size) {
+            if (!scan.hasNext()) throw IllegalArgumentException("Error while parsing input file")
+            original[i] = scan.nextLong()
+        }
+        scan.close()
+    }
     // branch-and-prune without Subset (recursive, private)
     private fun simpleBpRec(i: Int, usedSum: Long, remainingSum: Long, used: BooleanArray) {
         // are we out of bounds yet? -> prune
@@ -73,7 +100,8 @@ class SSP(n: Int) {
 
 @Throws(Exception::class)
 fun main() {
-    val ssp = SSP(20)
+//    val ssp = SSP("/Users/ruikang.tao/Projects/Rennes1/pa-tp/src/main/kotlin/inst_n25.txt");
+    val ssp = SSP(10)
     println(ssp)
     println(ssp.showIntegers())
     println(ssp.showTarget())
