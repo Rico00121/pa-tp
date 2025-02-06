@@ -1,17 +1,11 @@
 package org.example
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.ReentrantLock
-import kotlin.concurrent.withLock
+
 import kotlin.random.Random
 import kotlin.system.measureNanoTime
 
 // The size of the square matrix
-const val MATRIX_SIZE = 4000
+const val MATRIX_SIZE = 1000
+
 // The number of blocks
 const val NUM_BLOCKS = 20
 
@@ -27,7 +21,7 @@ fun matrixZeros(n: Int): Array<DoubleArray> {
 }
 
 // Generate a random matrix of N × N, the results of the elements are double random
-fun matrixRandom(n: Int): Array<DoubleArray> = Array(n) { DoubleArray(n){ doubleRandom() } }
+fun matrixRandom(n: Int): Array<DoubleArray> = Array(n) { DoubleArray(n) { doubleRandom() } }
 
 // Printing matrix (only when the matrix is small for easy observation results)
 fun matrixPrint(n: Int, A: Array<DoubleArray>) {
@@ -67,15 +61,9 @@ fun blockMatrixMultiplication(
     require(numBlocks > 0) { "Number of blocks must be greater than 0" }
     require(blockSize > 0) { "Block size must be greater than 0" }
 
-    val availableProcessors = Runtime.getRuntime().availableProcessors()
-    println("Current available number of processors: $availableProcessors")
-    val executor = Executors.newFixedThreadPool(availableProcessors)
-    val tasks = mutableListOf<Runnable>()
-
     for (iBlock in 0 until numBlocks) {
         for (jBlock in 0 until numBlocks) {
             for (kBlock in 0 until numBlocks) {
-                tasks.add{
                     multiplySubMatrixBlocks(
                         blockSize,
                         matrixA, iBlock * blockSize, kBlock * blockSize,
@@ -83,13 +71,20 @@ fun blockMatrixMultiplication(
                         matrixC, iBlock * blockSize, jBlock * blockSize
                     )
                 }
+        }
+    }
+}
+
+// Simple matrix multiplication: Calculate C = C + A * B
+fun mbmSimple(matrixSize: Int, matrixA: Array<DoubleArray>, matrixB: Array<DoubleArray>, matrixC: Array<DoubleArray>) {
+    // i: row, j: column, k: inner index
+    for (i in 0 until matrixSize) {
+        for (j in 0 until matrixSize) {
+            for (k in 0 until matrixSize) {
+                matrixC[i][j] += matrixA[i][k] * matrixB[k][j]
             }
         }
     }
-
-    tasks.forEach { executor.execute(it) }
-    executor.shutdown()
-    executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
 }
 
 
@@ -102,11 +97,38 @@ fun main() {
     val matrixB = matrixRandom(MATRIX_SIZE)
     var matrixC = matrixZeros(MATRIX_SIZE)
 
+
+    if (MATRIX_SIZE < 11) {
+        println("A =")
+        matrixPrint(MATRIX_SIZE, matrixA)
+        println("B =")
+        matrixPrint(MATRIX_SIZE, matrixB)
+        println("C =")
+        matrixPrint(MATRIX_SIZE, matrixC)
+    }
+
+    // Simple matrix multiplication
+    print("Computing C = C + A*B with simple algorithm ... ")
+    val timeSimple = measureNanoTime {
+        mbmSimple(MATRIX_SIZE, matrixA, matrixB, matrixC)
+    }
+    println("done!")
+    val timeSimpleSec = timeSimple / 1e9
+    if (MATRIX_SIZE < 11) {
+        println("C =")
+        matrixPrint(MATRIX_SIZE, matrixC)
+    }
+    println("Clock time = $timeSimpleSec seconds")
+
+    // Reset the C matrix to zero matrix
+    matrixC = matrixZeros(MATRIX_SIZE)
+
+
     // Block matrix multiplication
     println("Computing C = C + A*B with block algorithm ... ")
     val eachSubMatrixSize = MATRIX_SIZE / NUM_BLOCKS
     val timeBlock = measureNanoTime {
-        blockMatrixMultiplication(NUM_BLOCKS,eachSubMatrixSize, matrixA, matrixB, matrixC)
+        blockMatrixMultiplication(NUM_BLOCKS, eachSubMatrixSize, matrixA, matrixB, matrixC)
     }
     println("done!")
     val timeBlockSec = timeBlock / 1e9
